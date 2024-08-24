@@ -1,0 +1,3 @@
+﻿  main.cpp
+D:\Data\C++\ChallengeDSA\ChallengeDSA\main.cpp(297,13): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  ChallengeDSA.vcxproj -> D:\Data\C++\ChallengeDSA\x64\Debug\ChallengeDSA.exe
