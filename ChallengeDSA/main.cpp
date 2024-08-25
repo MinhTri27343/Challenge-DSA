@@ -13,6 +13,7 @@ struct City {
 	double lat; // latitude
 	double lng; // longitude
 };
+//Chuyen string thanh double
 double stod_(string s) {
 	double res = 0;
 	int i = 0;
@@ -41,7 +42,7 @@ double stod_(string s) {
 
 	return isNegative ? -res : res;
 }
-
+//Doc file roi luu vao vector
 vector<City> readFile(string filename) {
 	vector<City> data;
 	string read;
@@ -67,9 +68,9 @@ vector<City> readFile(string filename) {
 
 		data.push_back(tmp_city);
 	}
-
 	return data;
 }
+//Ham nay cho vui thoi cho cung khong co gi
 void Print(vector<City> data) {
 	for (int i = 0; i < 100; i++) {
 		cout << data[i].name << "; "
@@ -91,6 +92,7 @@ Node* createNode(City city)
 	newNode->key = city;
 	return newNode;
 }
+//Insert thanh pho vao cay
 void Insert(Node*& root, City city, int depth = 0)
 {
 	if (root == NULL)
@@ -100,22 +102,32 @@ void Insert(Node*& root, City city, int depth = 0)
 		return;
 	}
 	int k = depth % 2;
+	//Neu cay co thu tu chan
 	if (k == 0)
 	{
 		if (city.lat < root->key.lat)
 			Insert(root->left, city, depth + 1);
-		else if (city.lat >= root->key.lat)
+		else if (city.lat > root->key.lat)
 			Insert(root->right, city, depth + 1);
-		
+		else if (city.lat == root->key.lat && city.lng != root->key.lng)
+			Insert(root->right, city, depth + 1);
+		else
+			return;
 	}
+	//Neu cay co thu tu le
 	else
 	{
 		if (city.lng < root->key.lng)
 			Insert(root->left, city, depth + 1);
-		else if (city.lng >= root->key.lng)
+		else if (city.lng > root->key.lng)
 			Insert(root->right, city, depth + 1);
+		else if (city.lng == root->key.lng && city.lat != root->key.lat)
+			Insert(root->right, city, depth + 1);
+		else
+			return;
 	}
 }
+//Tinh khoang cach theo cong thuc haversine ma bien truyen vao la city voi toa do
 double distance(City city, double pos[2])
 {
 	// Change degree to radian
@@ -134,6 +146,7 @@ double distance(City city, double pos[2])
 
 	return R * c;
 }
+//Tinh khoang cach theo cong thuc haversine ma bien truyen vao la 2 city
 double distance(City city1, City city2) {
 
 	// Change degree to radian
@@ -153,6 +166,7 @@ double distance(City city1, City city2) {
 
 	return R * c;
 }
+//Tinh khoang cach theo cong thuc haversine ma bien truyen vao la 2 toa do
 double distance(double pos1[2], double pos2[2]) {
 
 	// Change degree to radian
@@ -172,6 +186,7 @@ double distance(double pos1[2], double pos2[2]) {
 
 	return R * c;
 }
+//Check xem thanh pho do co thuoc mien hinh chu nhat khong
 bool isInRectangle(City city, double posRectangel1[2], double posRectangel2[2])
 {
 	if (city.lat < min(posRectangel1[0], posRectangel2[0]) || city.lat > max(posRectangel1[0], posRectangel2[0]))
@@ -180,21 +195,26 @@ bool isInRectangle(City city, double posRectangel1[2], double posRectangel2[2])
 		return false;
 	return true;
 }
+//Check cay root co thanh pho nao thuoc mien chu nhat neu co thi luu vao vector city
 void RangeSearch(Node* root, vector<City>& city, double posRectangel1[2], double posRectangel2[2], int depth = 0)
 {
 	if (root == NULL)
 		return;
 	int k = depth % 2;
+	//Neu node do o thu tu chan thi so lat
 	if (k == 0)
 	{
+		//Neu lat nho hon min thi chac chan khong trong hinh chu nhat
 		if (root->key.lat < min(posRectangel1[k], posRectangel2[k]))
 		{
 			RangeSearch(root->right, city, posRectangel1, posRectangel2, depth + 1);
 		}
+		//Neu lat lon hon max thi chac chan khong trong hinh chu nhat
 		else if (root->key.lat > max(posRectangel1[k], posRectangel2[k]))
 		{
 			RangeSearch(root->left, city, posRectangel1, posRectangel2, depth + 1);
 		}
+		//Neu trong hinh chu nhat thi bo vao vector
 		else if (isInRectangle(root->key, posRectangel1, posRectangel2))
 		{
 			city.push_back(root->key);
@@ -207,6 +227,7 @@ void RangeSearch(Node* root, vector<City>& city, double posRectangel1[2], double
 			RangeSearch(root->right, city, posRectangel1, posRectangel2, depth + 1);
 		}
 	}
+	//Neu node do o thu tu le thi so y
 	else if(k == 1)
 	{
 		if (root->key.lng < min(posRectangel1[k], posRectangel2[k]))
@@ -230,12 +251,14 @@ void RangeSearch(Node* root, vector<City>& city, double posRectangel1[2], double
 		}
 	}
 }
+//Tim kiem lang gieng gan voi toa do nhat
 void NearestNeighborSearch(Node* root, City& city, double pos[2], double& bestDistance, int depth = 0)
 {
 	if (root == NULL)
 		return;
 	int k = depth % 2;
 	double d = distance(root->key, pos);
+	//Neu distance be hon best Distance thi luu lai trang thai
 	if (d < bestDistance)
 	{
 		bestDistance = d;
@@ -243,10 +266,12 @@ void NearestNeighborSearch(Node* root, City& city, double pos[2], double& bestDi
 	}
 	if (k == 0)
 	{
+		//Neu lat node lon hon thi di ben trai check
 		if (pos[k] < root->key.lat)
 		{
 			NearestNeighborSearch(root->left, city, pos, bestDistance, depth + 1);
 			double diff = 2 * 6371.0 * asin(sin((fabs((pos[k] - root->key.lat)) * pi / 180) / 2));
+			//Neu nhu chi so voi lat ma diff da lon hon roi thi chac chan co lng thi no se lon hon. Neu nhu so voi lat ma diff nho hon di nhanh do
 			if (diff < bestDistance) {
 				NearestNeighborSearch(root->right, city, pos, bestDistance, depth + 1);
 			}
@@ -290,12 +315,13 @@ void buildKDTree(Node*& root, vector<City>v, int depth = 0)
 	if (v.empty())
 		return;
 	int k = depth % 2;
+	//Neu nhu bac chan thi sort vector tu nho hon den lon hon so voi lat
 	if (k == 0)
 		sort(v.begin(), v.end(), compareLat);
 	else
 		sort(v.begin(), v.end(), compareLng);
 	int median = v.size() / 2;
-	
+	//Tao node voi median
 	root = createNode(v[median]);
 
 	vector<City> leftCity(v.begin(), v.begin() + median);
