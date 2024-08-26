@@ -1,4 +1,4 @@
-﻿#include<iostream>
+#include<iostream>
 #include<vector>
 #include<string>
 #include<sstream>
@@ -6,82 +6,35 @@
 #include<fstream>
 #include<iomanip>
 #include<algorithm>
+#include<conio.h>
+#include<queue>
 using namespace std;
 #define pi 3.14
 struct City {
 	string name;
-	double lat; // latitude
-	double lng; // longitude
+	double lat = 0; // latitude
+	double lng = 0; // longitude
 };
-//Chuyen string thanh double
-double stod_(string s) {
+// Convert string to double
+double stod_1(string s)
+{
 	double res = 0;
-	int i = 0;
+	stringstream ss(s);
 	bool isNegative = false;
-
-	if (s[i] == '-') {
+	if (s[0] == '-')
+	{
+		ss.ignore(1);
 		isNegative = true;
-		i++;
 	}
-
-	while (i < s.size() && s[i] != '.') {
-		res = res * 10 + (s[i] - '0');
-		++i;
-	}
-
-	if (i < s.size() && s[i] == '.') {
-		++i; // skip '.'
-		double frac = 0, factor = 1;
-		while (i < s.size()) {
-			factor /= 10;
-			frac += (s[i] - '0') * factor;
-			++i;
-		}
-		res += frac;
-	}
-
+	ss >> res;
 	return isNegative ? -res : res;
 }
-//Doc file roi luu vao vector
-vector<City> readFile(string filename) {
-	vector<City> data;
-	string read;
-	City tmp_city;
-	ifstream f(filename.c_str());
 
-	if (!f.is_open())
-		return data;
 
-	getline(f, read);
-
-	while (getline(f, read)) {
-		string tmp;
-		stringstream ss(read);
-
-		getline(ss, tmp_city.name, ','); // read city's name
-
-		getline(ss, tmp, ','); // read latitude
-		tmp_city.lat = stod_(tmp);
-
-		getline(ss, tmp, ','); // read longitude
-		tmp_city.lng = stod_(tmp);
-
-		data.push_back(tmp_city);
-	}
-	return data;
-}
-//Ham nay cho vui thoi cho cung khong co gi
-void Print(vector<City> data) {
-	for (int i = 0; i < 100; i++) {
-		cout << data[i].name << "; "
-			<< setprecision(5) << fixed << data[i].lat << "; " << setprecision(5) << fixed
-			<< data[i].lng << "\n";
-	}
-}
 struct Node
 {
-	Node* left;
-	Node* right;
+	Node* left = NULL;
+	Node* right = NULL;
 	City key;
 };
 Node* createNode(City city)
@@ -93,7 +46,7 @@ Node* createNode(City city)
 	return newNode;
 }
 //Insert thanh pho vao cay
-void Insert(Node*& root, City city, int depth = 0)
+void Insert(Node*& root, City city, bool& isDuplicate, int depth = 0)
 {
 	if (root == NULL)
 	{
@@ -106,25 +59,31 @@ void Insert(Node*& root, City city, int depth = 0)
 	if (k == 0)
 	{
 		if (city.lat < root->key.lat)
-			Insert(root->left, city, depth + 1);
+			Insert(root->left, city, isDuplicate, depth + 1);
 		else if (city.lat > root->key.lat)
-			Insert(root->right, city, depth + 1);
+			Insert(root->right, city, isDuplicate, depth + 1);
 		else if (city.lat == root->key.lat && city.lng != root->key.lng)
-			Insert(root->right, city, depth + 1);
+			Insert(root->right, city, isDuplicate, depth + 1);
 		else
+		{
+			isDuplicate = true;
 			return;
+		}
 	}
 	//Neu cay co thu tu le
 	else
 	{
 		if (city.lng < root->key.lng)
-			Insert(root->left, city, depth + 1);
+			Insert(root->left, city, isDuplicate, depth + 1);
 		else if (city.lng > root->key.lng)
-			Insert(root->right, city, depth + 1);
+			Insert(root->right, city, isDuplicate, depth + 1);
 		else if (city.lng == root->key.lng && city.lat != root->key.lat)
-			Insert(root->right, city, depth + 1);
+			Insert(root->right, city, isDuplicate, depth + 1);
 		else
+		{
+			isDuplicate = true;
 			return;
+		}
 	}
 }
 //Tinh khoang cach theo cong thuc haversine ma bien truyen vao la city voi toa do
@@ -228,7 +187,7 @@ void RangeSearch(Node* root, vector<City>& city, double posRectangel1[2], double
 		}
 	}
 	//Neu node do o thu tu le thi so y
-	else if(k == 1)
+	else if (k == 1)
 	{
 		if (root->key.lng < min(posRectangel1[k], posRectangel2[k]))
 		{
@@ -320,7 +279,7 @@ void buildKDTree(Node*& root, vector<City>v, int depth = 0)
 		sort(v.begin(), v.end(), compareLat);
 	else
 		sort(v.begin(), v.end(), compareLng);
-	int median = v.size() / 2;
+	int median = (int)v.size() / 2;
 	//Tao node voi median
 	root = createNode(v[median]);
 
@@ -338,37 +297,183 @@ void NLR(Node* root)
 	NLR(root->left);
 	NLR(root->right);
 }
-int main()
+// ================= INTERFACE ======================/ 
+City readCity(string read)
 {
-	/*vector<City>v = readFile("worldcities-20210313-population-50000+.csv");
-	Node* root = NULL;
-	for (int i = 0; i < v.size(); i++)
-		Insert(root, v[i]);
-	double pos[2] = { 30, 35 };
-	City city; double best = INT_MAX;
-	NearestNeighborSearch(root, city, pos, best);
-	cout << city.name << "," << city.lat << "," << city.lng << endl << endl;
-	cout << distance(city, pos) << endl;
-	double min = INT_MAX;
-	for (int i = 0; i < v.size(); i++)
+	City tmp_city;
+	string tmp;
+	stringstream ss(read);
+
+	getline(ss, tmp_city.name, ','); // rx`ead city's name
+
+	getline(ss, tmp, ','); // read latitude
+	tmp_city.lat = stod_1(tmp);
+
+	getline(ss, tmp, ','); // read longitude
+	tmp_city.lng = stod_1(tmp);
+	return tmp_city;
+}
+//Doc file roi luu vao vector
+vector<City> readFile(string filename) {
+	vector<City> data;
+	string read;
+	City tmp_city;
+	ifstream f(filename.c_str());
+
+	if (!f.is_open())
 	{
-		if (distance(v[i], pos) < min)
+		cout << "Can not open file\n";
+		return data;
+	}
+
+	getline(f, read);
+
+	while (getline(f, read)) {
+		tmp_city = readCity(read);
+		data.push_back(tmp_city);
+	}
+	return data;
+}
+void inputCity(Node*& root)
+{
+	if (root == NULL)
+	{
+		cout << "Please, load a list of cities from a CSV file\n";
+		return;
+	}
+	City data;
+	bool isDuplicate = false;
+	cin.ignore();
+	cout << "Input city: "; getline(cin, data.name);
+	cout << "Input latitude: "; cin >> data.lat;
+	cout << "Input longitude: "; cin >> data.lng;
+	Insert(root, data, isDuplicate);
+	// check trùng toạ độ chưa check trùng tên
+	if (isDuplicate == true)
+	{
+		cout << "City is exist\n";
+	}
+}
+// If duplicate is skip, only insert city that no duplicate
+Node* insertMultipleCities(string fileName, Node*& root)
+{
+	if (root == NULL)
+	{
+		cout << " Please, load a list of cities from a CSV file\n";
+		return NULL;
+	}
+	vector<City> temp = readFile(fileName);
+	Node* newCity = root;
+	bool isDuplicate = false;
+	for (int i = 0; i < temp.size(); i++)
+	{
+		Insert(newCity, temp[i], isDuplicate);
+	}
+	return newCity;
+}
+void printRangeSearch(Node* root)
+{
+	double posRectangel1[2];
+	double posRectangel2[2];
+	cout << "Input bottom-left corners (latitude longitude): ";
+	cin >> posRectangel1[0] >> posRectangel1[1];
+	cout << "Input top-right corners (latitude longitude): ";
+	cin >> posRectangel2[0] >> posRectangel2[1];
+	vector<City> rectangel; 
+	RangeSearch(root, rectangel, posRectangel1, posRectangel2);
+	if (rectangel.size() == 0)
+	{
+		cout << "No city is within this region\n";
+	}
+	else
+	{
+		cout << "List of all cities within this region\n";
+		for (int i = 0; i < rectangel.size(); i++)
 		{
-			min = distance(v[i], pos);
+			cout << rectangel[i].name << " " << rectangel[i].lat << " " << rectangel[i].lng << endl;
 		}
 	}
-	cout << min << endl;*/
-	/*double pos1[2] = { -0.1,34.75 };
-	double pos2[2] = { 30, 35 };
-	cout << distance(pos1, pos2);*/
-	/*vector<City>v = readFile("worldcities-20210313-population-50000+.csv");
+}
+void printLevelOrder(Node* root)
+{
+	if (root == NULL) return;
+	queue<Node*> q;
+	q.push(root);
+	int level = 0;
+	while (!q.empty())
+	{
+		int n = q.size();
+		cout << "Level " << level << ": \n";
+		while (n--)
+		{
+			Node* first = q.front();
+			cout << first->key.name << " " << first->key.lat << " " << first->key.lng << endl;
+			q.pop();
+			if (first->left)
+			{
+				q.push(first->left);
+			}
+			if (first->right)
+			{
+				q.push(first->right);
+			}
+		}
+		level++;
+	}
+}
+void interface()
+{
+	vector<City> city;
 	Node* root = NULL;
-	buildKDTree(root, v);
-	vector<City>res;
-	double pos1[2] = { 35.6897,139.6923 };
-	double pos2[2] = { 40.6943, -73.9249 };
-	City city;
-	double bestDistance = INT_MAX;
-	NearestNeighborSearch(root, city, pos1, bestDistance);
-	cout << bestDistance << "," << city.name;*/
+	while (true)
+	{
+		system("cls");
+		cout << "00. Exit\n";
+		cout << "01. Load a list of cities from a CSV file \n";
+		cout << "02. Insert a new city into the KD-Tree directly via the command line\n";
+		cout << "03. Insert multiple new cities into the KD-Tree from a specified CSV file path\n";
+		cout << "04. Conduct a nearest neighbor search by providing latitude and longitude coordinates\n";
+		cout << "05. Query all cities within a specified rectangular region defined by its geographical boundaries\n";
+		cout << "Input choose: ";
+		int choose; cin >> choose;
+		system("cls");
+		if (choose == 0) break;
+		else if (choose == 1)
+		{
+			cout << "Input CSV file: ";
+			string fileName;
+			cin >> fileName;
+			city = readFile(fileName);
+			bool isDuplicate = false;
+			for (int i = 0; i < city.size(); i++)
+			{
+				Insert(root, city[i], isDuplicate);
+			}
+		}
+		else if (choose == 2)
+		{
+			inputCity(root);
+		}
+		else if (choose == 3)
+		{
+			string file;
+			cout << "Input CSV file path: "; cin >> file;
+			Node* newCity = insertMultipleCities(file, root);
+			if (newCity != NULL)
+			{
+				cout << "Insert multiple new cities is successfull\n";
+			}
+		}
+		else if (choose == 4)
+		{
+			printRangeSearch(root);
+		}
+		cout << endl;
+		printLevelOrder(root);
+		_getch();
+	}
+}
+int main()
+{
+	interface();
 }
