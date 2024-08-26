@@ -279,7 +279,7 @@ void buildKDTree(Node*& root, vector<City>v, int depth = 0)
 		sort(v.begin(), v.end(), compareLat);
 	else
 		sort(v.begin(), v.end(), compareLng);
-	int median = (int)v.size() / 2;
+	int median = v.size() / 2;
 	//Tao node voi median
 	root = createNode(v[median]);
 
@@ -444,11 +444,7 @@ void interface()
 			string fileName;
 			cin >> fileName;
 			city = readFile(fileName);
-			bool isDuplicate = false;
-			for (int i = 0; i < city.size(); i++)
-			{
-				Insert(root, city[i], isDuplicate);
-			}
+			buildKDTree(root, city);
 		}
 		else if (choose == 2)
 		{
@@ -473,7 +469,7 @@ void interface()
 		_getch();
 	}
 }
-int main()
+int main(int argc, char* argv[])
 {
 	interface();
 }
