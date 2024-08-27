@@ -15,9 +15,12 @@ struct City {
 	double lat = 0; // latitude
 	double lng = 0; // longitude
 };
+vector<City> Curr;
+vector<City> Prev;
 // Convert string to double
 double stod_1(string s)
 {
+
 	double res = 0;
 	stringstream ss(s);
 	bool isNegative = false;
@@ -333,6 +336,8 @@ vector<City> readFile(string filename) {
 		data.push_back(tmp_city);
 	}
 	f.close();
+	Prev = Curr;
+	Curr.insert(Curr.end(), data.begin(), data.end());
 	return data;
 }
 void inputCity(Node*& root)
@@ -353,7 +358,10 @@ void inputCity(Node*& root)
 	if (isDuplicate == true)
 	{
 		cout << "City is exist\n";
+		return;
 	}
+	Prev = Curr;
+	Curr.push_back(data);
 }
 // If duplicate is skip, only insert city that no duplicate
 Node* insertMultipleCities(string fileName, Node*& root)
@@ -365,10 +373,15 @@ Node* insertMultipleCities(string fileName, Node*& root)
 	}
 	vector<City> temp = readFile(fileName);
 	Node* newCity = root;
-	bool isDuplicate = false;
 	for (int i = 0; i < temp.size(); i++)
 	{
+		bool isDuplicate = false;
 		Insert(newCity, temp[i], isDuplicate);
+		if (isDuplicate = false)
+		{
+			Prev = Curr;
+			Curr.push_back(temp[i]);
+		}
 	}
 	return newCity;
 }
@@ -466,15 +479,18 @@ vector<City> levelOrder(Node* root)
 // Save KD tree into binary file
 void saveBinaryFile(Node* root, string fileName)
 {
-	ofstream out(fileName, ios::binary);
-	vector<City> v = levelOrder(root);
-	for (int i = 0; i < v.size(); i++)
+	ofstream out(fileName, ios::binary | ios::app);
+	if (Prev.size() == 0)
 	{
-		int n = v[i].name.size();
+		Curr = levelOrder(root);
+	}
+	for (int i = Prev.size(); i < Curr.size(); i++)
+	{
+		int n = Curr[i].name.size();
 		out.write((char*)&n, sizeof(n));
-		out.write(v[i].name.c_str(), n);
-		out.write((char*)&v[i].lat, sizeof(v[i].lat));
-		out.write((char*)&v[i].lng, sizeof(v[i].lng));
+		out.write(Curr[i].name.c_str(), n);
+		out.write((char*)&Curr[i].lat, sizeof(Curr[i].lat));
+		out.write((char*)&Curr[i].lng, sizeof(Curr[i].lng));
 	}
 	out.close();
 }
@@ -490,7 +506,7 @@ void saveBinaryFile(Node* root, string fileName)
 //		return NULL;
 //	}
 //	bool isDuplicate = false;
-//	while (!in.eof())
+//	while (true)
 //	{
 //		City data;
 //		int n = 0;
@@ -560,7 +576,7 @@ void interface()
 }
 int main()
 {
-	string fileName1 = "test.bin";
+	/*string fileName1 = "test.bin";
 	Node* root = NULL;
 	vector<City> city;
 	cout << "Input CSV file: ";
@@ -568,10 +584,13 @@ int main()
 	cin >> fileName;
 	city = readFile(fileName);
 	buildKDTree(root, city);
+	saveBinaryFile(root, fileName1);
+	insertMultipleCities("demo1.txt", root);
+	saveBinaryFile(root, "test.bin");
 	printLevelOrder(root);
 	cout << endl;
 	saveBinaryFile(root, fileName1);
-	//Node* temp  = readBinaryFile(fileName1);
-	//printLevelOrder(temp);
+	Node* temp  = readBinaryFile(fileName1);
+	printLevelOrder(temp);*/
 	return 0;
 }
