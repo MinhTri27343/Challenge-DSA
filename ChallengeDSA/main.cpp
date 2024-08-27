@@ -388,9 +388,8 @@ void printNearestNeighborSearch(Node* root)
 	cout << "Nearest neighbor search: \n";
 	cout << data.name << " " << data.lat << " " << data.lng << endl;
 }
-void printRangeSearch(Node* root)
+void printRangeSearch(Node* root, string fileName)
 {
-	string fileName = "QueryCities.csv";
 	ofstream out(fileName);
 	double posRectangel1[2];
 	double posRectangel2[2];
@@ -398,7 +397,7 @@ void printRangeSearch(Node* root)
 	cin >> posRectangel1[0] >> posRectangel1[1];
 	cout << "Input top-right corners (latitude longitude): ";
 	cin >> posRectangel2[0] >> posRectangel2[1];
-	vector<City> rectangel; 
+	vector<City> rectangel;
 	RangeSearch(root, rectangel, posRectangel1, posRectangel2);
 	if (rectangel.size() == 0)
 	{
@@ -441,6 +440,71 @@ void printLevelOrder(Node* root)
 		level++;
 	}
 }
+// Save vector following level order
+vector<City> levelOrder(Node* root)
+{
+	vector<City> v;
+	if (root == NULL) return v;
+	queue<Node*> q;
+	q.push(root);
+	while (!q.empty())
+	{
+		Node* first = q.front();
+		v.push_back(first->key);
+		q.pop();
+		if (first->left)
+		{
+			q.push(first->left);
+		}
+		if (first->right)
+		{
+			q.push(first->right);
+		}
+	}
+	return v;
+}
+// Save KD tree into binary file
+void saveBinaryFile(Node* root, string fileName)
+{
+	ofstream out(fileName, ios::binary);
+	vector<City> v = levelOrder(root);
+	for (int i = 0; i < v.size(); i++)
+	{
+		int n = v[i].name.size();
+		out.write((char*)&n, sizeof(n));
+		out.write(v[i].name.c_str(), n);
+		out.write((char*)&v[i].lat, sizeof(v[i].lat));
+		out.write((char*)&v[i].lng, sizeof(v[i].lng));
+	}
+	out.close();
+}
+
+//// Read KD Tree from binary file
+//Node* readBinaryFile(string fileName)
+//{
+//	Node* root = NULL;
+//	ifstream in(fileName, ios::binary);
+//	if (!in)
+//	{
+//		cout << "Can not open file\n";
+//		return NULL;
+//	}
+//	bool isDuplicate = false;
+//	while (!in.eof())
+//	{
+//		City data;
+//		int n = 0;
+//		in.read((char*)&n, sizeof(n));
+//		if (n == 0) break;
+//		data.name.resize(n);                   
+//		in.read(&data.name[0], n);       
+//		in.read((char*)&data.lat, sizeof(double));
+//		in.read((char*)&data.lng, sizeof(double));
+//		Insert(root, data, isDuplicate);
+//	}
+//	in.close();
+//	return root;
+//}
 void interface()
 {
 	vector<City> city;
@@ -486,14 +550,28 @@ void interface()
 		}
 		else if (choose == 5)
 		{
-			printRangeSearch(root);
+			string fileName = "QueryCities.csv";
+			printRangeSearch(root, fileName);
 		}
 		cout << endl;
 		printLevelOrder(root);
 		_getch();
 	}
 }
-int main(int argc, char* argv[])
+int main()
 {
-	interface();
+	string fileName1 = "test.bin";
+	Node* root = NULL;
+	vector<City> city;
+	cout << "Input CSV file: ";
+	string fileName;
+	cin >> fileName;
+	city = readFile(fileName);
+	buildKDTree(root, city);
+	printLevelOrder(root);
+	cout << endl;
+	saveBinaryFile(root, fileName1);
+	//Node* temp  = readBinaryFile(fileName1);
+	//printLevelOrder(temp);
+	return 0;
 }
