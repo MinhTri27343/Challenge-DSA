@@ -332,6 +332,7 @@ vector<City> readFile(string filename) {
 		tmp_city = readCity(read);
 		data.push_back(tmp_city);
 	}
+	f.close();
 	return data;
 }
 void inputCity(Node*& root)
@@ -371,8 +372,26 @@ Node* insertMultipleCities(string fileName, Node*& root)
 	}
 	return newCity;
 }
+void printNearestNeighborSearch(Node* root)
+{
+	if (root == NULL)
+	{
+		cout << "Please, load a list of cities from a CSV file\n";
+		return;
+	}
+	double pos[2];
+	cout << "Input latitude: "; cin >> pos[0];
+	cout << "Input longitude: "; cin >> pos[1];
+	City data;
+	double bestDistance = 1e9;
+	NearestNeighborSearch(root, data, pos, bestDistance);
+	cout << "Nearest neighbor search: \n";
+	cout << data.name << " " << data.lat << " " << data.lng << endl;
+}
 void printRangeSearch(Node* root)
 {
+	string fileName = "QueryCities.csv";
+	ofstream out(fileName);
 	double posRectangel1[2];
 	double posRectangel2[2];
 	cout << "Input bottom-left corners (latitude longitude): ";
@@ -387,12 +406,13 @@ void printRangeSearch(Node* root)
 	}
 	else
 	{
-		cout << "List of all cities within this region\n";
+		out << "city,lat,lng,country,population\n";
 		for (int i = 0; i < rectangel.size(); i++)
 		{
-			cout << rectangel[i].name << " " << rectangel[i].lat << " " << rectangel[i].lng << endl;
+			out << rectangel[i].name << " " << rectangel[i].lat << " " << rectangel[i].lng << endl;
 		}
 	}
+	out.close();
 }
 void printLevelOrder(Node* root)
 {
@@ -461,6 +481,10 @@ void interface()
 			}
 		}
 		else if (choose == 4)
+		{
+			printNearestNeighborSearch(root);
+		}
+		else if (choose == 5)
 		{
 			printRangeSearch(root);
 		}
