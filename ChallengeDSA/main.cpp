@@ -272,7 +272,7 @@ bool compareLng(City a, City b)
 {
 	return a.lng < b.lng;
 }
-void buildKDTree(Node*& root, vector<City>v, int depth = 0)
+void buildNLR(vector<City>v, vector<City>&curr, int depth = 0)
 {
 	if (v.empty())
 		return;
@@ -284,21 +284,23 @@ void buildKDTree(Node*& root, vector<City>v, int depth = 0)
 		sort(v.begin(), v.end(), compareLng);
 	int median = v.size() / 2;
 	//Tao node voi median
-	root = createNode(v[median]);
+	curr.push_back(v[median]);
 
 	vector<City> leftCity(v.begin(), v.begin() + median);
 	vector<City> rightCity(v.begin() + median + 1, v.end());
 
-	buildKDTree(root->left, leftCity, depth + 1);
-	buildKDTree(root->right, rightCity, depth + 1);
+	buildNLR(leftCity, curr, depth + 1);
+	buildNLR(rightCity, curr, depth + 1);
 }
-void NLR(Node* root)
+void buildKDTree(Node*& root, vector<City>v)
 {
-	if (root == NULL)
-		return;
-	cout << root->key.name << endl;
-	NLR(root->left);
-	NLR(root->right);
+	vector<City>curr;
+	buildNLR(v, curr);
+	bool isDuplicate = false;
+	for (int i = 0; i < curr.size(); i++)
+	{
+		Insert(root, curr[i], isDuplicate);
+	}
 }
 // ================= INTERFACE ======================/ 
 
