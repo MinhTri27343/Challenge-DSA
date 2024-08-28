@@ -301,6 +301,16 @@ void NLR(Node* root)
 	NLR(root->right);
 }
 // ================= INTERFACE ======================/ 
+
+bool isUTF8(string s)
+{
+	for (int x : s)
+	{
+		if (x < 0 || x > 255) return true;
+	}
+	return false;
+}
+
 City readCity(string read)
 {
 	City tmp_city;
@@ -332,12 +342,12 @@ vector<City> readFile(string filename) {
 	getline(f, read);
 
 	while (getline(f, read)) {
+		// If read is UTF8 , continue; 
+		if (isUTF8(read)) continue;
 		tmp_city = readCity(read);
 		data.push_back(tmp_city);
 	}
 	f.close();
-	Prev = Curr;
-	Curr.insert(Curr.end(), data.begin(), data.end());
 	return data;
 }
 void inputCity(Node*& root)
@@ -360,30 +370,24 @@ void inputCity(Node*& root)
 		cout << "City is exist\n";
 		return;
 	}
-	Prev = Curr;
+	cout << "Insert a new city is successfull";
 	Curr.push_back(data);
 }
 // If duplicate is skip, only insert city that no duplicate
-Node* insertMultipleCities(string fileName, Node*& root)
+void insertMultipleCities(string fileName, Node*& root)
 {
-	if (root == NULL)
-	{
-		cout << " Please, load a list of cities from a CSV file\n";
-		return NULL;
-	}
 	vector<City> temp = readFile(fileName);
-	Node* newCity = root;
 	for (int i = 0; i < temp.size(); i++)
 	{
 		bool isDuplicate = false;
-		Insert(newCity, temp[i], isDuplicate);
-		if (isDuplicate = false)
+		Insert(root, temp[i], isDuplicate);
+		if (!isDuplicate)
 		{
-			Prev = Curr;
 			Curr.push_back(temp[i]);
 		}
+
 	}
-	return newCity;
+	return;
 }
 void printNearestNeighborSearch(Node* root)
 {
@@ -396,13 +400,18 @@ void printNearestNeighborSearch(Node* root)
 	cout << "Input latitude: "; cin >> pos[0];
 	cout << "Input longitude: "; cin >> pos[1];
 	City data;
-	double bestDistance = 1e9;
+	double bestDistance = INT32_MAX;
 	NearestNeighborSearch(root, data, pos, bestDistance);
 	cout << "Nearest neighbor search: \n";
 	cout << data.name << " " << data.lat << " " << data.lng << endl;
 }
 void printRangeSearch(Node* root, string fileName)
 {
+	if (root == NULL)
+	{
+		cout << "Please, load a list of cities from a CSV file\n";
+		return;
+	}
 	ofstream out(fileName);
 	double posRectangel1[2];
 	double posRectangel2[2];
@@ -423,12 +432,17 @@ void printRangeSearch(Node* root, string fileName)
 		{
 			out << rectangel[i].name << " " << rectangel[i].lat << " " << rectangel[i].lng << endl;
 		}
+		cout << "Query all cities within a specified rectangular region is successfull\n";
 	}
 	out.close();
 }
 void printLevelOrder(Node* root)
 {
-	if (root == NULL) return;
+	if (root == NULL)
+	{
+		cout << "Please, load a list of cities from a CSV file\n";
+		return;
+	}
 	queue<Node*> q;
 	q.push(root);
 	int level = 0;
@@ -453,6 +467,23 @@ void printLevelOrder(Node* root)
 		level++;
 	}
 }
+
+void deleteAllNodes(Node*& root)
+{
+	if (root == NULL)
+	{
+		return;
+	}
+	deleteAllNodes(root->left);
+	deleteAllNodes(root->right);
+	if (root->left == NULL && root->right == NULL)
+	{
+		delete root;
+		root = NULL;
+	}
+}
+// ============ EXTENSIONS =================
+
 // Save vector following level order
 vector<City> levelOrder(Node* root)
 {
@@ -477,9 +508,14 @@ vector<City> levelOrder(Node* root)
 	return v;
 }
 // Save KD tree into binary file
-void saveBinaryFile(Node* root, string fileName)
+void saveKDTree(Node* root, string fileName)
 {
 	ofstream out(fileName, ios::binary | ios::app);
+	if (root == NULL)
+	{
+		cout << "Please, load a list of cities from a CSV file\n";
+		return;
+	}
 	if (Prev.size() == 0)
 	{
 		Curr = levelOrder(root);
@@ -492,35 +528,47 @@ void saveBinaryFile(Node* root, string fileName)
 		out.write((char*)&Curr[i].lat, sizeof(Curr[i].lat));
 		out.write((char*)&Curr[i].lng, sizeof(Curr[i].lng));
 	}
+	cout << "Save the KDTree to a binary file is successfull\n";
+	Prev = Curr;
 	out.close();
 }
 
-//// Read KD Tree from binary file
-//Node* readBinaryFile(string fileName)
-//{
-//	Node* root = NULL;
-//	ifstream in(fileName, ios::binary);
-//	if (!in)
-//	{
-//		cout << "Can not open file\n";
-//		return NULL;
-//	}
-//	bool isDuplicate = false;
-//	while (true)
-//	{
-//		City data;
-//		int n = 0;
-//		in.read((char*)&n, sizeof(n));
-//		if (n == 0) break;
-//		data.name.resize(n);                   
-//		in.read(&data.name[0], n);       
-//		in.read((char*)&data.lat, sizeof(double));
-//		in.read((char*)&data.lng, sizeof(double));
-//		Insert(root, data, isDuplicate);
-//	}
-//	in.close();
-//	return root;
-//}
+
+// Read KD Tree from binary file
+Node* readKDTree(string filename)
+{
+	ifstream f(filename, ios::binary);
+	if (!f.good())
+	{
+		cout << "File open error!\n";
+		return nullptr;
+	}
+
+	Node* root = nullptr;
+	bool isDuplicate = false;
+	City temp;
+	int size;
+
+	while (f.good())
+	{
+		size = 0;
+		f.read((char*)&size, sizeof(size));
+		if (!size) break;
+
+		temp.name.resize(size);
+		f.read(&temp.name[0], size);
+
+		f.read((char*)&temp.lat, sizeof(double));
+		f.read((char*)&temp.lng, sizeof(double));
+		Insert(root, temp, isDuplicate);
+	}
+	if (root == NULL)
+	{
+		cout << "Please, load a list of cities from a CSV file\n";
+	}
+	f.close();
+	return root;
+}
 void interface()
 {
 	vector<City> city;
@@ -534,10 +582,18 @@ void interface()
 		cout << "03. Insert multiple new cities into the KD-Tree from a specified CSV file path\n";
 		cout << "04. Conduct a nearest neighbor search by providing latitude and longitude coordinates\n";
 		cout << "05. Query all cities within a specified rectangular region defined by its geographical boundaries\n";
+		cout << "06. Save the KDTree to a binary file \n";
+		cout << "07. Read The KDTree from a binary file\n";
+		cout << "08. Print the KDTree in level order\n";
+		cout << "09. Delete all nodes in the KDTree\n";
 		cout << "Input choose: ";
 		int choose; cin >> choose;
 		system("cls");
-		if (choose == 0) break;
+		if (choose == 0)
+		{
+			deleteAllNodes(root);
+			break;
+		}
 		else if (choose == 1)
 		{
 			cout << "Input CSV file: ";
@@ -545,6 +601,10 @@ void interface()
 			cin >> fileName;
 			city = readFile(fileName);
 			buildKDTree(root, city);
+			if (!city.empty())
+			{
+				cout << "Load a list of cities is successfull\n";
+			}
 		}
 		else if (choose == 2)
 		{
@@ -552,12 +612,19 @@ void interface()
 		}
 		else if (choose == 3)
 		{
-			string file;
-			cout << "Input CSV file path: "; cin >> file;
-			Node* newCity = insertMultipleCities(file, root);
-			if (newCity != NULL)
+			if (root == NULL)
 			{
-				cout << "Insert multiple new cities is successfull\n";
+				cout << "Please, load a list of cities from a CSV file\n";
+			}
+			else
+			{
+				string file;
+				cout << "Input CSV file path: "; cin >> file;
+				insertMultipleCities(file, root);
+				if (root != NULL)
+				{
+					cout << "Insert multiple new cities is successfull\n";
+				}
 			}
 		}
 		else if (choose == 4)
@@ -569,28 +636,47 @@ void interface()
 			string fileName = "QueryCities.csv";
 			printRangeSearch(root, fileName);
 		}
-		cout << endl;
-		printLevelOrder(root);
+		else if (choose == 6)
+		{
+			string fileName = "KDTree.bin";
+			saveKDTree(root, fileName);
+		}
+		else if (choose == 7)
+		{
+			// Code để test
+			/*cout << "First\n";
+			printLevelOrder(root);
+			cout << endl;*/
+
+
+			string fileName = "KDTree.bin";
+			deleteAllNodes(root);
+			root = readKDTree(fileName);
+			if (root != NULL)
+			{
+				cout << "KDTree after being read from a binary file\n";
+				printLevelOrder(root);
+			}
+		}
+		else if (choose == 8)
+		{
+			printLevelOrder(root);
+		}
+		else if (choose == 9)
+		{
+			deleteAllNodes(root);
+			if (!root) cout << "Delete all nodes is successfull\n";
+		}
 		_getch();
 	}
 }
+/*
+NOTE: 
+- KDTree.bin : Save KDTree to a binary file
+- QueryCities.csv: Save info all cities in rectangle
+*/
 int main()
 {
-	/*string fileName1 = "test.bin";
-	Node* root = NULL;
-	vector<City> city;
-	cout << "Input CSV file: ";
-	string fileName;
-	cin >> fileName;
-	city = readFile(fileName);
-	buildKDTree(root, city);
-	saveBinaryFile(root, fileName1);
-	insertMultipleCities("demo1.txt", root);
-	saveBinaryFile(root, "test.bin");
-	printLevelOrder(root);
-	cout << endl;
-	saveBinaryFile(root, fileName1);
-	Node* temp  = readBinaryFile(fileName1);
-	printLevelOrder(temp);*/
+	interface();
 	return 0;
 }
