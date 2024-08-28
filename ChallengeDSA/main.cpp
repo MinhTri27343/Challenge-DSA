@@ -18,9 +18,8 @@ struct City {
 vector<City> Curr;
 vector<City> Prev;
 // Convert string to double
-double stod_1(string s)
+double stod_(string s)
 {
-
 	double res = 0;
 	stringstream ss(s);
 	bool isNegative = false;
@@ -32,8 +31,6 @@ double stod_1(string s)
 	ss >> res;
 	return isNegative ? -res : res;
 }
-
-
 struct Node
 {
 	Node* left = NULL;
@@ -66,7 +63,7 @@ void Insert(Node*& root, City city, bool& isDuplicate, int depth = 0)
 		else if (city.lat > root->key.lat)
 			Insert(root->right, city, isDuplicate, depth + 1);
 		else if (city.lat == root->key.lat && city.lng != root->key.lng)
-			Insert(root->right, city, isDuplicate, depth + 1);
+			Insert(root->left, city, isDuplicate, depth + 1);
 		else
 		{
 			isDuplicate = true;
@@ -81,7 +78,7 @@ void Insert(Node*& root, City city, bool& isDuplicate, int depth = 0)
 		else if (city.lng > root->key.lng)
 			Insert(root->right, city, isDuplicate, depth + 1);
 		else if (city.lng == root->key.lng && city.lat != root->key.lat)
-			Insert(root->right, city, isDuplicate, depth + 1);
+			Insert(root->left, city, isDuplicate, depth + 1);
 		else
 		{
 			isDuplicate = true;
@@ -322,10 +319,10 @@ City readCity(string read)
 	getline(ss, tmp_city.name, ','); // rx`ead city's name
 
 	getline(ss, tmp, ','); // read latitude
-	tmp_city.lat = stod_1(tmp);
+	tmp_city.lat = stod_(tmp);
 
 	getline(ss, tmp, ','); // read longitude
-	tmp_city.lng = stod_1(tmp);
+	tmp_city.lng = stod_(tmp);
 	return tmp_city;
 }
 //Doc file roi luu vao vector
@@ -372,7 +369,7 @@ void inputCity(Node*& root)
 		cout << "City is exist\n";
 		return;
 	}
-	cout << "Insert a new city is successfull";
+	cout << "Insert a new city is successful";
 	Curr.push_back(data);
 }
 // If duplicate is skip, only insert city that no duplicate
@@ -387,7 +384,6 @@ void insertMultipleCities(string fileName, Node*& root)
 		{
 			Curr.push_back(temp[i]);
 		}
-
 	}
 	return;
 }
@@ -434,7 +430,7 @@ void printRangeSearch(Node* root, string fileName)
 		{
 			out << rectangel[i].name << " " << rectangel[i].lat << " " << rectangel[i].lng << endl;
 		}
-		cout << "Query all cities within a specified rectangular region is successfull\n";
+		cout << "Query all cities within a specified rectangular region is successful\n";
 	}
 	out.close();
 }
@@ -530,7 +526,7 @@ void saveKDTree(Node* root, string fileName)
 		out.write((char*)&Curr[i].lat, sizeof(Curr[i].lat));
 		out.write((char*)&Curr[i].lng, sizeof(Curr[i].lng));
 	}
-	cout << "Save the KDTree to a binary file is successfull\n";
+	cout << "Save the KDTree to a binary file is successful\n";
 	Prev = Curr;
 	out.close();
 }
@@ -605,7 +601,7 @@ void interface()
 			buildKDTree(root, city);
 			if (!city.empty())
 			{
-				cout << "Load a list of cities is successfull\n";
+				cout << "Load a list of cities is successful\n";
 			}
 		}
 		else if (choose == 2)
@@ -625,7 +621,7 @@ void interface()
 				insertMultipleCities(file, root);
 				if (root != NULL)
 				{
-					cout << "Insert multiple new cities is successfull\n";
+					cout << "Insert multiple new cities is successful\n";
 				}
 			}
 		}
@@ -667,7 +663,7 @@ void interface()
 		else if (choose == 9)
 		{
 			deleteAllNodes(root);
-			if (!root) cout << "Delete all nodes is successfull\n";
+			if (!root) cout << "Delete all nodes is successful\n";
 		}
 		_getch();
 	}
