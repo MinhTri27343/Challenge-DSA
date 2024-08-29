@@ -458,8 +458,8 @@ void printRangeSearch(Node* root, string fileName)
 		cout << "List all cities within a specified rectangular region: \n";
 		for (int i = 0; i < rectangel.size(); i++)
 		{
-			out << rectangel[i].name << "\n" << rectangel[i].lat << "\n" << rectangel[i].lng << endl;
-			cout << rectangel[i].name << "\n" << rectangel[i].lat << "\n" << rectangel[i].lng << endl;
+			out << rectangel[i].name << "," << rectangel[i].lat << "," << rectangel[i].lng << endl;
+			cout << rectangel[i].name << "," << rectangel[i].lat << "," << rectangel[i].lng << endl;
 		}
 	}
 	out.close();
