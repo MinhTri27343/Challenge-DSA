@@ -504,12 +504,6 @@ void deleteAllNodes(Node*& root)
 		root = NULL;
 	}
 }
-void deleteInfoFile(string fileName)
-{
-	ofstream file(fileName, ios::binary | ios::trunc);
-	file.close();
-	return;
-}
 // ============ EXTENSIONS =================
 
 // Save vector following level order
@@ -556,8 +550,6 @@ void saveKDTree(Node* root, string fileName)
 	cout << "Save the KDTree to a binary file is successful\n";
 	out.close();
 }
-
-
 // Read KD Tree from binary file
 Node* readKDTree(string filename)
 {
