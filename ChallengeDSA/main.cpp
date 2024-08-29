@@ -405,7 +405,7 @@ void insertMultipleCities(string fileName, Node*& root)
 	{
 		bool isDuplicate = false;
 		Insert(root, temp[i], isDuplicate);
-	
+
 	}
 	return;
 }
@@ -667,7 +667,7 @@ void interface()
 			root = readKDTree(fileName);
 			if (root != NULL)
 			{
-				cout << "Read the KDTree to a binary file is successful\n";
+				cout << "Read the KDTree from a binary file is successful\n";
 			}
 		}
 		else if (choose == 8)
@@ -694,6 +694,7 @@ void interface()
 NOTE:
 - KDTree.bin : Save KDTree to a binary file
 - QueryCities.csv: Save info all cities in rectangle
+- NearestNeighbor.csv: save city info with nearest neighbor
 */
 int main()
 {
