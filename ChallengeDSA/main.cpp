@@ -269,7 +269,7 @@ bool compareLng(City a, City b)
 {
 	return a.lng < b.lng;
 }
-void buildNLR(vector<City>v, vector<City>&curr, int depth = 0)
+void buildNLR(vector<City>v, vector<City>& curr, int depth = 0)
 {
 	if (v.empty())
 		return;
@@ -300,7 +300,12 @@ void buildKDTree(Node*& root, vector<City>v)
 	}
 }
 // ================= INTERFACE ======================/ 
-
+void clearBinaryFile(string filePath) {
+	ofstream file(filePath, std::ios::binary | std::ios::out | std::ios::trunc);
+	if (file.is_open()) {
+		file.close();
+	}
+}
 bool isUTF8(string s)
 {
 	for (int x : s)
@@ -349,6 +354,29 @@ vector<City> readFile(string filename) {
 	f.close();
 	return data;
 }
+//Doc file roi luu vao vector
+vector<City> readFile1(string filename) {
+	vector<City> data;
+	string read;
+	City tmp_city;
+	ifstream f(filename.c_str());
+
+	if (!f.is_open())
+	{
+		cout << "Can not open file\n";
+		return data;
+	}
+
+
+	while (getline(f, read)) {
+		// If read is UTF8 , continue; 
+		if (isUTF8(read)) continue;
+		tmp_city = readCity(read);
+		data.push_back(tmp_city);
+	}
+	f.close();
+	return data;
+}
 void inputCity(Node*& root)
 {
 	if (root == NULL)
@@ -375,7 +403,7 @@ void inputCity(Node*& root)
 // If duplicate is skip, only insert city that no duplicate
 void insertMultipleCities(string fileName, Node*& root)
 {
-	vector<City> temp = readFile(fileName);
+	vector<City> temp = readFile1(fileName);
 	for (int i = 0; i < temp.size(); i++)
 	{
 		bool isDuplicate = false;
@@ -425,12 +453,12 @@ void printRangeSearch(Node* root, string fileName)
 	}
 	else
 	{
-		out << "city,lat,lng,country,population\n";
+		cout << "List all cities within a specified rectangular region: \n";
 		for (int i = 0; i < rectangel.size(); i++)
 		{
-			out << rectangel[i].name << " " << rectangel[i].lat << " " << rectangel[i].lng << endl;
+			out << rectangel[i].name << "\n" << rectangel[i].lat << "\n" << rectangel[i].lng << endl;
+			cout << rectangel[i].name << "\n" << rectangel[i].lat << "\n" << rectangel[i].lng << endl;
 		}
-		cout << "Query all cities within a specified rectangular region is successful\n";
 	}
 	out.close();
 }
@@ -479,6 +507,12 @@ void deleteAllNodes(Node*& root)
 		delete root;
 		root = NULL;
 	}
+}
+void deleteInfoFile(string fileName)
+{
+	ofstream file(fileName, ios::binary | ios::trunc);
+	file.close();
+	return;
 }
 // ============ EXTENSIONS =================
 
@@ -562,7 +596,7 @@ Node* readKDTree(string filename)
 	}
 	if (root == NULL)
 	{
-		cout << "Please, load a list of cities from a CSV file\n";
+		cout << "There is no information in the binary file\n";
 	}
 	f.close();
 	return root;
@@ -584,12 +618,16 @@ void interface()
 		cout << "07. Read The KDTree from a binary file\n";
 		cout << "08. Print the KDTree in level order\n";
 		cout << "09. Delete all nodes in the KDTree\n";
+		cout << "10. Delete all information in the binary file\n";
 		cout << "Input choose: ";
 		int choose; cin >> choose;
 		system("cls");
 		if (choose == 0)
 		{
+			string fileName = "KDTree.bin";
 			deleteAllNodes(root);
+			string file = "KDTree.bin";
+			clearBinaryFile(file);
 			break;
 		}
 		else if (choose == 1)
@@ -641,19 +679,13 @@ void interface()
 		}
 		else if (choose == 7)
 		{
-			// Code để test
-			/*cout << "First\n";
-			printLevelOrder(root);
-			cout << endl;*/
-
 
 			string fileName = "KDTree.bin";
 			deleteAllNodes(root);
 			root = readKDTree(fileName);
 			if (root != NULL)
 			{
-				cout << "KDTree after being read from a binary file\n";
-				printLevelOrder(root);
+				cout << "Read the KDTree to a binary file is successful\n";
 			}
 		}
 		else if (choose == 8)
@@ -662,14 +694,26 @@ void interface()
 		}
 		else if (choose == 9)
 		{
+			string file = "KDTree.bin";
 			deleteAllNodes(root);
+			clearBinaryFile(file);
+			Prev.clear();
+			Curr.clear();
 			if (!root) cout << "Delete all nodes is successful\n";
+		}
+		else if (choose == 10)
+		{
+			string file = "KDTree.bin";
+			clearBinaryFile(file);
+			Prev.clear();
+			Curr.clear();
+			cout << "Delete all information in the binary file is successful\n";
 		}
 		_getch();
 	}
 }
 /*
-NOTE: 
+NOTE:
 - KDTree.bin : Save KDTree to a binary file
 - QueryCities.csv: Save info all cities in rectangle
 */
