@@ -430,8 +430,8 @@ void printNearestNeighborSearch(Node* root, string file)
 	double bestDistance = INT32_MAX;
 	NearestNeighborSearch(root, data, pos, bestDistance);
 	cout << "Nearest neighbor search: \n";
-	cout << data.name << " " << data.lat << " " << data.lng << endl;
-	out << data.name << " " << data.lat << " " << data.lng << endl;
+	cout << data.name << "," << data.lat << "," << data.lng << endl;
+	out << data.name << "," << data.lat << "," << data.lng << endl;
 }
 void printRangeSearch(Node* root, string fileName)
 {
