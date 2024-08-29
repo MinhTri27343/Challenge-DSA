@@ -415,13 +415,14 @@ void insertMultipleCities(string fileName, Node*& root)
 	}
 	return;
 }
-void printNearestNeighborSearch(Node* root)
+void printNearestNeighborSearch(Node* root, string file)
 {
 	if (root == NULL)
 	{
 		cout << "Please, load a list of cities from a CSV file\n";
 		return;
 	}
+	ofstream out(file);
 	double pos[2];
 	cout << "Input latitude: "; cin >> pos[0];
 	cout << "Input longitude: "; cin >> pos[1];
@@ -430,6 +431,7 @@ void printNearestNeighborSearch(Node* root)
 	NearestNeighborSearch(root, data, pos, bestDistance);
 	cout << "Nearest neighbor search: \n";
 	cout << data.name << " " << data.lat << " " << data.lng << endl;
+	out << data.name << " " << data.lat << " " << data.lng << endl;
 }
 void printRangeSearch(Node* root, string fileName)
 {
@@ -665,7 +667,8 @@ void interface()
 		}
 		else if (choose == 4)
 		{
-			printNearestNeighborSearch(root);
+			string file = " NearestNeighbor.csv";
+			printNearestNeighborSearch(root, file);
 		}
 		else if (choose == 5)
 		{
