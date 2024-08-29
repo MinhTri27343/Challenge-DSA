@@ -646,7 +646,7 @@ void interface()
 		}
 		else if (choose == 4)
 		{
-			string file = " NearestNeighbor.csv";
+			string file = "NearestNeighbor.csv";
 			printNearestNeighborSearch(root, file);
 		}
 		else if (choose == 5)
