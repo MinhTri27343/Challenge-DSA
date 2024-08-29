@@ -15,8 +15,6 @@ struct City {
 	double lat = 0; // latitude
 	double lng = 0; // longitude
 };
-vector<City> Curr;
-vector<City> Prev;
 // Convert string to double
 double stod_(string s)
 {
@@ -398,7 +396,6 @@ void inputCity(Node*& root)
 		return;
 	}
 	cout << "Insert a new city is successful";
-	Curr.push_back(data);
 }
 // If duplicate is skip, only insert city that no duplicate
 void insertMultipleCities(string fileName, Node*& root)
@@ -408,10 +405,7 @@ void insertMultipleCities(string fileName, Node*& root)
 	{
 		bool isDuplicate = false;
 		Insert(root, temp[i], isDuplicate);
-		if (!isDuplicate)
-		{
-			Curr.push_back(temp[i]);
-		}
+	
 	}
 	return;
 }
@@ -544,26 +538,22 @@ vector<City> levelOrder(Node* root)
 // Save KD tree into binary file
 void saveKDTree(Node* root, string fileName)
 {
-	ofstream out(fileName, ios::binary | ios::app);
+	ofstream out(fileName, ios::binary | ios::trunc);
 	if (root == NULL)
 	{
 		cout << "Please, load a list of cities from a CSV file\n";
 		return;
 	}
-	if (Prev.size() == 0)
+	vector<City> data = levelOrder(root);
+	for (int i = 0; i < data.size(); i++)
 	{
-		Curr = levelOrder(root);
-	}
-	for (int i = Prev.size(); i < Curr.size(); i++)
-	{
-		int n = Curr[i].name.size();
+		int n = data[i].name.size();
 		out.write((char*)&n, sizeof(n));
-		out.write(Curr[i].name.c_str(), n);
-		out.write((char*)&Curr[i].lat, sizeof(Curr[i].lat));
-		out.write((char*)&Curr[i].lng, sizeof(Curr[i].lng));
+		out.write(data[i].name.c_str(), n);
+		out.write((char*)&data[i].lat, sizeof(data[i].lat));
+		out.write((char*)&data[i].lng, sizeof(data[i].lng));
 	}
 	cout << "Save the KDTree to a binary file is successful\n";
-	Prev = Curr;
 	out.close();
 }
 
@@ -626,10 +616,7 @@ void interface()
 		system("cls");
 		if (choose == 0)
 		{
-			string fileName = "KDTree.bin";
 			deleteAllNodes(root);
-			string file = "KDTree.bin";
-			clearBinaryFile(file);
 			break;
 		}
 		else if (choose == 1)
@@ -700,16 +687,12 @@ void interface()
 			string file = "KDTree.bin";
 			deleteAllNodes(root);
 			clearBinaryFile(file);
-			Prev.clear();
-			Curr.clear();
 			if (!root) cout << "Delete all nodes is successful\n";
 		}
 		else if (choose == 10)
 		{
 			string file = "KDTree.bin";
 			clearBinaryFile(file);
-			Prev.clear();
-			Curr.clear();
 			cout << "Delete all information in the binary file is successful\n";
 		}
 		_getch();
