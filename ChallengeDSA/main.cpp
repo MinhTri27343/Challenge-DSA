@@ -299,12 +299,14 @@ void buildKDTree(Node*& root, vector<City>v)
 	}
 }
 // ================= INTERFACE ======================/ 
+// Delete all information in file
 void clearBinaryFile(string filePath) {
 	ofstream file(filePath, std::ios::binary | std::ios::out | std::ios::trunc);
 	if (file.is_open()) {
 		file.close();
 	}
 }
+// Check, if string is UTF8
 bool isUTF8(string s)
 {
 	for (int x : s)
@@ -314,6 +316,7 @@ bool isUTF8(string s)
 	return false;
 }
 
+// save string into City
 City readCity(string read)
 {
 	City tmp_city;
@@ -329,7 +332,7 @@ City readCity(string read)
 	tmp_city.lng = stod_(tmp);
 	return tmp_city;
 }
-//Doc file roi luu vao vector
+// Read fileName and save list City
 vector<City> readFile(string filename) {
 	vector<City> data;
 	string read;
@@ -353,7 +356,7 @@ vector<City> readFile(string filename) {
 	f.close();
 	return data;
 }
-//Doc file roi luu vao vector
+//Read fileName and save list City
 vector<City> readFile1(string filename) {
 	vector<City> data;
 	string read;
@@ -376,6 +379,7 @@ vector<City> readFile1(string filename) {
 	f.close();
 	return data;
 }
+// Input a city
 void inputCity(Node*& root)
 {
 	if (root == NULL)
@@ -410,6 +414,7 @@ void insertMultipleCities(string fileName, Node*& root)
 	}
 	return;
 }
+// print city that nearest neightbor into consolve and save into file
 void printNearestNeighborSearch(Node* root, string file)
 {
 	if (root == NULL)
@@ -428,6 +433,7 @@ void printNearestNeighborSearch(Node* root, string file)
 	cout << data.name << "," << data.lat << "," << data.lng << endl;
 	out << data.name << "," << data.lat << "," << data.lng << endl;
 }
+// print all city in rectangel into consolve and save into file 
 void printRangeSearch(Node* root, string fileName)
 {
 	if (root == NULL)
@@ -459,6 +465,7 @@ void printRangeSearch(Node* root, string fileName)
 	}
 	out.close();
 }
+// print KDTree in level order
 void printLevelOrder(Node* root)
 {
 	if (root == NULL)
@@ -490,7 +497,7 @@ void printLevelOrder(Node* root)
 		level++;
 	}
 }
-
+// Delete all nodes in KDTree
 void deleteAllNodes(Node*& root)
 {
 	if (root == NULL)
@@ -586,6 +593,7 @@ Node* readKDTree(string filename)
 	f.close();
 	return root;
 }
+// Provide feature to user use function that need 
 void interface()
 {
 	vector<City> city;
